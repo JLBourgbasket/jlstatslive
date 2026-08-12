@@ -12,7 +12,10 @@ sample-match.json                     flux de test (format natif de l'app)
 sample-boxscore.csv                   exemple d'import CSV joueurs
 netlify.toml                          configuration Netlify
 netlify/functions/live-stats.js       proxy serverless pour les flux live bloqués par CORS
-netlify/functions/vision-boxscore.mjs lecture d'une photo de boxscore par modèle de vision
+netlify/functions/vision-read-background.mjs  lecture d'une photo de boxscore (arrière-plan, 15 min)
+netlify/functions/vision-result.mjs           relit le résultat d'une lecture
+netlify/functions/vision-boxscore.mjs         même lecture en synchrone (secours)
+package.json                                  dépendance @netlify/blobs (installée par Netlify)
 ```
 
 ## Déploiement
@@ -84,7 +87,13 @@ Une photo de boxscore consomme environ 1 500 à 3 000 tokens d'entrée par table
 
 Limites : image de 4,5 Mo maximum, formats JPEG / PNG / WebP / GIF.
 
-**Note technique** : les fonctions Netlify synchrones sont coupées à 10 secondes, insuffisant pour lire une feuille complète. `vision-boxscore.mjs` répond donc en flux (fonction v2, un premier octet immédiat puis un signe de vie toutes les 2 s) et l'application envoie une requête par tableau d'équipe, en parallèle. Si une erreur 502 persiste, la feuille est trop dense : photographiez une équipe à la fois.
+**Note technique** : les fonctions Netlify synchrones sont coupées à 10 secondes (26 s sur certains plans), insuffisant pour lire une feuille de statistiques — d'où les erreurs 502 / 504.
+
+La lecture passe donc par une **fonction d'arrière-plan** : `vision-read-background.mjs` répond immédiatement puis dispose de 15 minutes, dépose son résultat dans un store Blobs, et l'application le relit via `vision-result.mjs`. L'image est réduite à 1800 px par le navigateur et la feuille est découpée en groupes de six joueurs, lus en parallèle.
+
+`package.json` déclare `@netlify/blobs` : avec un déploiement Git, Netlify installe la dépendance automatiquement. En CLI, lancez `npm install` dans le dossier avant de déployer.
+
+Si les fonctions d'arrière-plan ne sont pas disponibles sur votre plan, l'application se rabat automatiquement sur `vision-boxscore.mjs` en synchrone — plus rapide mais soumis à la limite de 10 s.
 
 Une photo prise de biais ou un tableau coupé produisent des erreurs de colonnes — d'où l'écran de validation obligatoire.
 

@@ -1,0 +1,9 @@
+{
+  "name": "jl-live-performance",
+  "private": true,
+  "version": "3.0.0",
+  "description": "JL Bourg — Live Performance : fonctions Netlify",
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  }
+}
