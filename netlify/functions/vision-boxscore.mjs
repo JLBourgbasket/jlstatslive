@@ -5,14 +5,16 @@
 // toutes les 2 secondes, ce qui évite la coupure à 10 s des fonctions synchrones.
 // Le corps final est du JSON (les espaces de tête sont ignorés par JSON.parse).
 //
-// POST { image: "<base64>", mediaType: "image/jpeg", table: 1, quarters: true }
+// POST { image: "<base64>", mediaType: "image/jpeg", table: 1, part: 1, size: 6, quarters: true }
 //   table    : quel tableau d'équipe lire (1 = premier de la feuille, 2 = deuxième)
+//   part     : quel groupe de lignes (1 = joueurs 1 à size, 2 = suivants…)
+//   size     : nombre de joueurs par groupe (défaut 6) — garde chaque appel court
 //   quarters : demander aussi le tableau de score par quart-temps
 // -> { team, players, totals, quarters }  |  { error }
 //
 // Variables Netlify : ANTHROPIC_API_KEY (requis), VISION_MODEL (optionnel)
 
-const MODEL = process.env.VISION_MODEL || 'claude-sonnet-4-5';
+const MODEL = process.env.VISION_MODEL || 'claude-haiku-4-5';
 const MAX_BYTES = 6 * 1024 * 1024;
 
 const CORS = {
@@ -22,9 +24,11 @@ const CORS = {
   'Cache-Control': 'no-store'
 };
 
-const prompt = (table, quarters) => `Tu lis une feuille de statistiques de basket, photographiée ou capturée à l'écran. Elle peut contenir plusieurs tableaux, un par équipe.
+const prompt = (table, quarters, from, to) => `Tu lis une feuille de statistiques de basket, photographiée ou capturée à l'écran. Elle peut contenir plusieurs tableaux, un par équipe.
 
 Ne lis QUE le tableau d'équipe numéro ${table} (dans l'ordre d'apparition, de haut en bas). Ignore complètement les autres tableaux de joueurs. S'il n'existe pas de tableau numéro ${table}, renvoie {"players": []}.
+
+Dans ce tableau, ne renvoie QUE les joueurs de la ligne ${from} à la ligne ${to} incluses (en comptant les lignes de joueurs à partir de 1, dans l'ordre d'affichage). S'il y a moins de ${from} joueurs, renvoie {"players": []}. Renvoie la ligne TOTAL dans "totals" seulement si elle est visible.
 
 Correspondance des colonnes, format LNB :
 MIN=minutes, PTS=points, 2TR=2pts réussis, 2TT=2pts tentés, 3R=3pts réussis, 3T=3pts tentés,
@@ -56,7 +60,7 @@ Règles :
     "ftm": 0, "fta": 0, "orb": 0, "drb": 0, "ast": 0, "stl": 0, "blk": 0, "to": 0, "pf": 0 }
 }`;
 
-async function read(image, mediaType, table, quarters) {
+async function read(image, mediaType, table, quarters, from, to) {
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -72,7 +76,7 @@ async function read(image, mediaType, table, quarters) {
         role: 'user',
         content: [
           { type: 'image', source: { type: 'base64', media_type: mediaType, data: image } },
-          { type: 'text', text: prompt(table, quarters) }
+          { type: 'text', text: prompt(table, quarters, from, to) }
         ]
       }]
     })
@@ -110,6 +114,10 @@ export default async (req) => {
   const image = String(payload.image || '').replace(/^data:[^;]+;base64,/, '');
   const mediaType = String(payload.mediaType || 'image/jpeg');
   const table = Number(payload.table) === 2 ? 2 : 1;
+  const size = Math.min(20, Math.max(2, Number(payload.size) || 6));
+  const part = Math.min(6, Math.max(1, Number(payload.part) || 1));
+  const from = (part - 1) * size + 1;
+  const to = part * size;
   const quarters = payload.quarters !== false;
 
   const fail = (msg, status) => new Response(JSON.stringify({ error: msg }), { status: status || 400, headers: { ...CORS, 'content-type': 'application/json' } });
@@ -126,7 +134,7 @@ export default async (req) => {
       controller.enqueue(enc.encode(' '));
       const beat = setInterval(() => { try { controller.enqueue(enc.encode(' ')); } catch {} }, 2000);
       try {
-        const out = await read(image, mediaType, table, quarters);
+        const out = await read(image, mediaType, table, quarters, from, to);
         controller.enqueue(enc.encode(JSON.stringify(out)));
       } catch (err) {
         controller.enqueue(enc.encode(JSON.stringify({ error: String(err && err.message || err) })));
