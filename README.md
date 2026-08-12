@@ -95,12 +95,15 @@ Le badge du bandeau passe en `EN DIRECT` et les jauges se recalculent.
 
 Sans flux disponible, **SIMULER UN MATCH** (bandeau) fait avancer un match fictif toutes les 2 secondes : utile pour vérifier couleurs, momentum et alertes joueurs.
 
-## Les quatre écrans
+## Les cinq écrans
 
 - **LIVE** — score, fautes d'équipe, momentum par tranche de 5 minutes, quatre cadrans ATTACK / DEFENSE / POSSESSION / NET, les 5 écarts prioritaires, pouls collectif.
 - **TEAM** — duels JL Bourg / adversaire et les 12 jauges collectives contre la baseline V0.
 - **PLAYERS** — une carte par joueur : 7 jauges avec sa zone cible individuelle, statut, charge minutes, fautes, +/-. Clic sur une carte pour la référence historique et le delta live. Tri par priorité, minutes ou nom.
+- **DÉBRIEF** — feuille A4 imprimable du match : chiffres clés, bascules par tranche de 5 minutes, écarts collectifs, tableau des onze joueurs (Δ TS contre baseline, DNP inclus) et analyse textuelle générée depuis les données. Bouton IMPRIMER / PDF ; à l'impression, seule la feuille sort.
 - **DATA** — import boxscore LNB, LIVE SOURCE, saisie manuelle équipe et joueurs, JSON, CSV, capture photo.
+
+À faire après chaque match : onglet DÉBRIEF → IMPRIMER / PDF pour la feuille du staff, et onglet DATA → JSON → EXPORTER pour archiver le match (l'archive permettra de recalculer les baselines en fin de saison).
 
 Langue : français par défaut, bascule EN dans le bandeau. Le match en cours est conservé dans le navigateur (localStorage).
 
