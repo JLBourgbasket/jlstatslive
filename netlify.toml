@@ -11,7 +11,7 @@
     X-Frame-Options = "DENY"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "same-origin"
-    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    Permissions-Policy = "camera=(self), microphone=(), geolocation=()"
 
 [[headers]]
   for = "/.netlify/functions/*"

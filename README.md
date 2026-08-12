@@ -12,7 +12,7 @@ sample-match.json                     flux de test (format natif de l'app)
 sample-boxscore.csv                   exemple d'import CSV joueurs
 netlify.toml                          configuration Netlify
 netlify/functions/live-stats.js       proxy serverless pour les flux live bloqués par CORS
-netlify/functions/vision-boxscore.js  lecture d'une photo de boxscore par modèle de vision
+netlify/functions/vision-boxscore.mjs lecture d'une photo de boxscore par modèle de vision
 ```
 
 ## Déploiement
@@ -25,7 +25,7 @@ Ou en connectant le dossier à un dépôt Git relié à Netlify (`netlify.toml` 
 
 ---
 
-## Intégrer vision-boxscore.js — procédure
+## Intégrer vision-boxscore.mjs — procédure
 
 La fonction est déjà dans le ZIP. Il reste trois choses à faire.
 
@@ -64,8 +64,8 @@ curl -X POST https://VOTRE-SITE.netlify.app/.netlify/functions/vision-boxscore \
 ```
 
 Réponse attendue : `{"error":"image manquante"}` — la fonction est en ligne et la clé est lue.
-Si la réponse est `{"error":"ANTHROPIC_API_KEY absente…"}`, la variable n'est pas déclarée sur l'environnement déployé.
-Si c'est une page 404, les fonctions n'ont pas été publiées (utilisez la commande CLI ci-dessus, pas le Drag & Drop).
+Si la réponse est `{"error":"ANTHROPIC_API_KEY absente…"}`, la variable n'est pas déclarée sur l'environnement déployé : ajoutez-la puis **Trigger deploy → Clear cache and deploy site** (une variable ajoutée après un déploiement n'est lue qu'au suivant).
+Si c'est une page 404, les fonctions n'ont pas été publiées : vérifiez le chemin exact `netlify/functions/vision-boxscore.mjs` et utilisez la commande CLI ci-dessus plutôt que le Drag & Drop.
 
 ### Utilisation en match
 
@@ -80,9 +80,13 @@ Seuls les joueurs de l'effectif 2026-27 sont injectés ; les autres noms sont li
 
 ### Coût et limites
 
-Une photo de boxscore consomme environ 1 500 à 3 000 tokens d'entrée, soit de l'ordre de 1 à 2 centimes par lecture. Quatre lectures par match (une par quart-temps) restent négligeables.
+Une photo de boxscore consomme environ 1 500 à 3 000 tokens d'entrée par tableau, soit de l'ordre de 1 à 3 centimes par lecture. Quatre lectures par match restent négligeables.
 
-Limites : image de 4,5 Mo maximum, délai de 55 secondes, formats JPEG / PNG / WebP / GIF. Une photo prise de biais ou un tableau coupé produisent des erreurs de colonnes — d'où l'écran de validation obligatoire.
+Limites : image de 4,5 Mo maximum, formats JPEG / PNG / WebP / GIF.
+
+**Note technique** : les fonctions Netlify synchrones sont coupées à 10 secondes, insuffisant pour lire une feuille complète. `vision-boxscore.mjs` répond donc en flux (fonction v2, un premier octet immédiat puis un signe de vie toutes les 2 s) et l'application envoie une requête par tableau d'équipe, en parallèle. Si une erreur 502 persiste, la feuille est trop dense : photographiez une équipe à la fois.
+
+Une photo prise de biais ou un tableau coupé produisent des erreurs de colonnes — d'où l'écran de validation obligatoire.
 
 **Plus fiable que la photo quand le tableau est à l'écran :** sélectionnez-le, copiez, et collez dans **Import boxscore LNB** (même onglet). Aucune reconnaissance, aucune erreur possible, aucune clé API.
 
