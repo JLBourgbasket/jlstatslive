@@ -10,31 +10,42 @@ const MODEL = process.env.VISION_MODEL || 'claude-sonnet-4-5';
 const MAX_BYTES = 6 * 1024 * 1024; // 6 Mo de base64 ~ 4,5 Mo d'image
 
 const SCHEMA = `{
-  "team": "nom de l'équipe si visible, sinon null",
-  "players": [
+  "quarters": { "team": [23, 19, 24, 22], "opp": [18, 21, 19, 21] },
+  "teams": [
     {
-      "name": "PRENOM NOM",
-      "min": "mm:ss ou minutes décimales",
-      "pts": 0, "twoM": 0, "twoA": 0, "threeM": 0, "threeA": 0,
-      "ftm": 0, "fta": 0, "orb": 0, "drb": 0,
-      "ast": 0, "stl": 0, "blk": 0, "to": 0, "pf": 0, "pm": 0
+      "team": "nom de l'équipe tel qu'écrit au-dessus du tableau",
+      "players": [
+        {
+          "name": "PRENOM NOM",
+          "min": "mm:ss ou minutes décimales",
+          "pts": 0, "twoM": 0, "twoA": 0, "threeM": 0, "threeA": 0,
+          "ftm": 0, "fta": 0, "orb": 0, "drb": 0,
+          "ast": 0, "stl": 0, "blk": 0, "to": 0, "pf": 0, "pm": 0
+        }
+      ],
+      "totals": { "min": "200:00", "pts": 0, "twoM": 0, "twoA": 0, "threeM": 0, "threeA": 0, "ftm": 0, "fta": 0, "orb": 0, "drb": 0, "ast": 0, "stl": 0, "blk": 0, "to": 0, "pf": 0 }
     }
-  ],
-  "totals": { "min": "200:00", "pts": 0, "twoM": 0, "twoA": 0, "threeM": 0, "threeA": 0, "ftm": 0, "fta": 0, "orb": 0, "drb": 0, "ast": 0, "stl": 0, "blk": 0, "to": 0, "pf": 0 }
+  ]
 }`;
 
-const PROMPT = `Tu lis une feuille de statistiques de basket au format LNB (Betclic Élite / EuroCup), photographiée ou capturée à l'écran.
+const PROMPT = `Tu lis une feuille de statistiques de basket, photographiée ou capturée à l'écran. Elle peut contenir DEUX tableaux : une équipe par tableau.
 
-Correspondance des colonnes LNB :
+Correspondance des colonnes, format LNB :
 MIN=minutes, PTS=points, 2TR=2pts réussis, 2TT=2pts tentés, 3R=3pts réussis, 3T=3pts tentés,
 LFR=lancers réussis, LFT=lancers tentés, RO=rebonds offensifs, RD=rebonds défensifs,
 PD=passes décisives, INT=interceptions, CT=contres, BP=ballons perdus, FTE=fautes, +/-=différentiel.
-Ignore les colonnes de pourcentage (2P%, 3P%, LF%), REB, CS et EVAL.
+
+Autres nomenclatures fréquentes, même signification :
+2PM/2PA, 3PM/3PA, FTM/FTA, ORB/DRB, AST, STL, TO ou TOV, BLK, PF.
+
+Ignore les colonnes de pourcentage (2P%, 3P%, LF%), REB, CS et EVAL : elles sont recalculées.
 
 Règles :
+- une entrée "teams" par tableau d'équipe, dans l'ordre de la feuille ; reprends le nom d'équipe écrit au-dessus ;
 - une entrée par joueur, dans l'ordre du tableau ;
 - retire les marqueurs de titularisation (*) et de capitaine (C) des noms ;
-- inclus la ligne TOTAL dans "totals" ; ignore la ligne EQUIPE/ENTRAÎNEUR ;
+- inclus la ligne TOTAL de chaque tableau dans son "totals" ; ignore la ligne EQUIPE/ENTRAÎNEUR ;
+- si la feuille comporte un tableau de score par quart-temps, remplis "quarters" avec les points marqués par période : "team" pour la première équipe listée, "opp" pour la seconde ; sinon mets null ;
 - si une cellule est illisible, mets null (n'invente aucun chiffre) ;
 - réponds UNIQUEMENT avec cet objet JSON, sans texte autour, sans bloc de code :
 
@@ -108,7 +119,11 @@ exports.handler = async (event) => {
     }
 
     const data = JSON.parse(text.slice(start, end + 1));
-    if (!Array.isArray(data.players) || !data.players.length) {
+    const teams = Array.isArray(data.teams) && data.teams.length
+      ? data.teams
+      : (Array.isArray(data.players) && data.players.length ? [{ team: data.team || null, players: data.players, totals: data.totals || null }] : []);
+
+    if (!teams.length || !Array.isArray(teams[0].players) || !teams[0].players.length) {
       return { statusCode: 422, headers, body: JSON.stringify({ error: 'aucun joueur détecté' }) };
     }
 
@@ -116,9 +131,12 @@ exports.handler = async (event) => {
       statusCode: 200,
       headers,
       body: JSON.stringify({
-        team: data.team || null,
-        players: data.players,
-        totals: data.totals || null,
+        teams,
+        quarters: data.quarters && data.quarters.team && data.quarters.opp ? data.quarters : null,
+        // compatibilité : première équipe à plat
+        team: teams[0].team || null,
+        players: teams[0].players,
+        totals: teams[0].totals || null,
         usage: api.usage || null,
         model: MODEL
       })
