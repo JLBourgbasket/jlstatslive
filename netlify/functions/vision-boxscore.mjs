@@ -56,7 +56,8 @@ Règles :
 - mets la ligne TOTAL dans "totals" ; ignore la ligne EQUIPE/ENTRAÎNEUR ;
 - si une cellule est illisible, mets null (n'invente aucun chiffre) ;
 - pour chaque type de tir (2pts, 3pts, lancers francs), le nombre réussi ne peut JAMAIS dépasser le nombre tenté. Avant de répondre, vérifie CHAQUE paire (réussis, tenté) une par une : si réussis > tenté, tu as très probablement inversé les deux colonnes (une confusion fréquente entre "3R/3T" ou "2TR/2TT" par exemple) — inverse-les pour corriger, ne renvoie jamais une paire où réussis > tenté ;
-- lis les colonnes strictement dans l'ordre où elles apparaissent dans la ligne d'en-tête, de gauche à droite, sans supposer qu'un groupe de colonnes suit le même ordre qu'un autre groupe voisin ;${quarters ? `
+- lis les colonnes strictement dans l'ordre où elles apparaissent dans la ligne d'en-tête, de gauche à droite, sans supposer qu'un groupe de colonnes suit le même ordre qu'un autre groupe voisin ;
+- si un petit tableau de score par quart-temps (Q1 Q2 Q3 Q4) apparaît au-dessus des tableaux joueurs, c'est une structure totalement séparée avec ses propres colonnes : ignore sa mise en page pour lire les tableaux joueurs, et ne mélange jamais ses colonnes avec celles d'un tableau joueur ;${quarters ? `
 - la feuille comporte peut-être un petit tableau de score par quart-temps (Q1 Q2 Q3 Q4) : remplis "quarters" avec les points par période, "team" pour la première équipe listée et "opp" pour la seconde ; sinon mets "quarters" à null ;` : ''}
 - réponds UNIQUEMENT avec cet objet JSON, sans texte autour, sans bloc de code :
 
