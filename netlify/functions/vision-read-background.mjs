@@ -23,6 +23,15 @@ import { getStore } from '@netlify/blobs';
 const MODEL = process.env.VISION_MODEL || 'claude-haiku-4-5';
 const MAX_BYTES = 6 * 1024 * 1024;
 
+const quartersPrompt = () => `Tu lis une feuille de statistiques de basket. Elle contient un petit tableau de score par quart-temps (colonnes Q1, Q2, Q3, Q4, parfois TOTAL), séparé des tableaux de joueurs.
+
+Lis UNIQUEMENT ce petit tableau de score par quart-temps. Ignore complètement les tableaux joueurs.
+
+La première ligne de ce tableau est l'équipe locale/mentionnée en premier ("team"), la seconde l'adversaire ("opp"). Renvoie les points marqués PENDANT chaque quart-temps (pas le cumulé), un nombre par période, dans l'ordre Q1→Q4. S'il n'y a pas de tableau par quart-temps visible, renvoie {"quarters": null}.
+
+Réponds UNIQUEMENT avec cet objet JSON, sans texte autour :
+{ "quarters": { "team": [23, 19, 24, 22], "opp": [18, 21, 19, 21] } }`;
+
 const prompt = (table, quarters, from, to) => `Tu lis une feuille de statistiques de basket, photographiée ou capturée à l'écran. Elle peut contenir plusieurs tableaux, un par équipe.
 
 Ne lis QUE le tableau d'équipe numéro ${table} (dans l'ordre d'apparition, de haut en bas). Ignore complètement les autres tableaux de joueurs. S'il n'existe pas de tableau numéro ${table}, renvoie {"players": []}.
@@ -56,13 +65,11 @@ Règles :
 - si une cellule est illisible, mets null (n'invente aucun chiffre) ;
 - pour chaque type de tir (2pts, 3pts, lancers francs), le nombre réussi ne peut JAMAIS dépasser le nombre tenté. Avant de répondre, vérifie CHAQUE paire (réussis, tenté) une par une : si réussis > tenté, tu as très probablement inversé les deux colonnes (une confusion fréquente entre "3R/3T" ou "2TR/2TT" par exemple) — inverse-les pour corriger, ne renvoie jamais une paire où réussis > tenté ;
 - lis les colonnes strictement dans l'ordre où elles apparaissent dans la ligne d'en-tête, de gauche à droite, sans supposer qu'un groupe de colonnes suit le même ordre qu'un autre groupe voisin ;
-- si un petit tableau de score par quart-temps (Q1 Q2 Q3 Q4) apparaît au-dessus des tableaux joueurs, c'est une structure totalement séparée avec ses propres colonnes : ignore sa mise en page pour lire les tableaux joueurs, et ne mélange jamais ses colonnes avec celles d'un tableau joueur ;${quarters ? `
-- la feuille comporte peut-être un petit tableau de score par quart-temps (Q1 Q2 Q3 Q4) : remplis "quarters" avec les points par période, "team" pour la première équipe listée et "opp" pour la seconde ; sinon mets "quarters" à null ;` : ''}
+- si un petit tableau de score par quart-temps (Q1 Q2 Q3 Q4) apparaît au-dessus des tableaux joueurs, c'est une structure totalement séparée avec ses propres colonnes : ignore sa mise en page pour lire les tableaux joueurs, et ne mélange jamais ses colonnes avec celles d'un tableau joueur ;
 - réponds UNIQUEMENT avec cet objet JSON, sans texte autour, sans bloc de code :
 
 {
-  "team": "nom de l'équipe écrit au-dessus du tableau, sinon null",${quarters ? `
-  "quarters": { "team": [23, 19, 24, 22], "opp": [18, 21, 19, 21] },` : ''}
+  "team": "nom de l'équipe écrit au-dessus du tableau, sinon null",
   "players": [
     { "name": "PRENOM NOM", "min": "mm:ss ou minutes décimales", "pts": 0,
       "twoM": 0, "twoA": 0, "threeM": 0, "threeA": 0, "ftm": 0, "fta": 0,
@@ -88,11 +95,11 @@ export default async (req) => {
     try { await store.delete(jobId + '-img'); } catch {}
     const image = String(dropped.image || '').replace(/^data:[^;]+;base64,/, '');
     const mediaType = String(dropped.mediaType || 'image/jpeg');
+    const quartersOnly = payload.quartersOnly === true;
     const table = Number(payload.table) === 2 ? 2 : 1;
     const size = Math.min(20, Math.max(2, Number(payload.size) || 6));
     const part = Math.min(8, Math.max(1, Number(payload.part) || 1));
     const from = (part - 1) * size + 1, to = part * size;
-    const quarters = payload.quarters !== false;
 
     if (!process.env.ANTHROPIC_API_KEY) { await done({ error: 'ANTHROPIC_API_KEY absente des variables Netlify' }); return new Response('', { status: 202 }); }
     if (!image) { await done({ error: 'image manquante' }); return new Response('', { status: 202 }); }
@@ -114,7 +121,7 @@ export default async (req) => {
           role: 'user',
           content: [
             { type: 'image', source: { type: 'base64', media_type: mediaType, data: image } },
-            { type: 'text', text: prompt(table, quarters, from, to) }
+            { type: 'text', text: quartersOnly ? quartersPrompt() : prompt(table, false, from, to) }
           ]
         }]
       })
@@ -129,14 +136,17 @@ export default async (req) => {
     if (a < 0 || b < 0) { await done({ error: 'réponse illisible : ' + text.slice(0, 200) }); return new Response('', { status: 202 }); }
 
     const data = JSON.parse(text.slice(a, b + 1));
-    await done({
-      team: data.team || null,
-      players: Array.isArray(data.players) ? data.players : [],
-      totals: data.totals || null,
-      quarters: data.quarters && data.quarters.team && data.quarters.opp ? data.quarters : null,
-      model: MODEL,
-      usage: api.usage || null
-    });
+    if (quartersOnly) {
+      await done({ quarters: data.quarters && data.quarters.team && data.quarters.opp ? data.quarters : null, model: MODEL, usage: api.usage || null });
+    } else {
+      await done({
+        team: data.team || null,
+        players: Array.isArray(data.players) ? data.players : [],
+        totals: data.totals || null,
+        model: MODEL,
+        usage: api.usage || null
+      });
+    }
   } catch (err) {
     try { await done({ error: String(err && err.message || err) }); } catch {}
   }
