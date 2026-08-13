@@ -7,7 +7,12 @@
 // Le résultat est déposé dans un store Blobs, que l'application relit via
 // vision-result.
 //
-// POST { jobId, image, mediaType, table, part, size, quarters }
+// Les fonctions "-background" utilisent l'invocation Lambda asynchrone d'AWS,
+// plafonnée à 256 Ko de requête : trop petit pour transporter une image. L'image
+// est donc déposée au préalable par vision-submit ; ici on ne reçoit qu'un jobId
+// et on relit l'image dans le store.
+//
+// POST { jobId, table, part, size, quarters }
 //   -> 202 (aucun corps utile)
 //   puis GET /.netlify/functions/vision-result?id=<jobId>
 //
@@ -75,8 +80,11 @@ export default async (req) => {
   const done = (obj) => store.setJSON(jobId, Object.assign({ done: true, at: Date.now() }, obj));
 
   try {
-    const image = String(payload.image || '').replace(/^data:[^;]+;base64,/, '');
-    const mediaType = String(payload.mediaType || 'image/jpeg');
+    const dropped = await store.get(jobId + '-img', { type: 'json' });
+    if (!dropped) { await done({ error: 'image introuvable (dépôt vision-submit manquant ou expiré)' }); return new Response('', { status: 202 }); }
+    try { await store.delete(jobId + '-img'); } catch {}
+    const image = String(dropped.image || '').replace(/^data:[^;]+;base64,/, '');
+    const mediaType = String(dropped.mediaType || 'image/jpeg');
     const table = Number(payload.table) === 2 ? 2 : 1;
     const size = Math.min(20, Math.max(2, Number(payload.size) || 6));
     const part = Math.min(8, Math.max(1, Number(payload.part) || 1));
