@@ -38,7 +38,17 @@ PD=passes décisives, INT=interceptions, CT=contres, BP=ballons perdus, FTE=faut
 Autres nomenclatures fréquentes, même signification :
 2PM/2PA, 3PM/3PA, FTM/FTA, ORB/DRB, AST, STL, TO ou TOV, BLK, PF.
 
-Ignore les colonnes de pourcentage (2P%, 3P%, LF%), REB et EVAL : elles sont recalculées.
+Format EuroCup / Betclic Élite / FIBA (colonnes groupées avec sous-en-têtes) :
+Min, PTS, puis un groupe "2FG" avec deux sous-colonnes "M/A" (ex. "4/8" = 4 réussis sur 8 tentés → twoM=4, twoA=8) et "%" (à ignorer),
+un groupe "3FG" pareil → threeM/threeA, un groupe "FT" pareil → ftm/fta,
+un groupe "Rebounds" avec sous-colonnes O, D, T → orb, drb (ignore T, c'est la somme),
+AST, STL, TO,
+un groupe "Blocks" avec sous-colonnes F et A → blk = la colonne "F" uniquement (ignore "A"),
+un groupe "Fouls" avec sous-colonnes C et D → pf = la colonne "C" uniquement (ignore "D"),
+PIR (ou EVAL) : ignore, recalculé, +/- = pm.
+Une ligne "Team" sans nom de joueur (rebonds d'équipe) doit être ignorée. La ligne "Total" va dans "totals".
+
+Ignore toujours les colonnes de pourcentage (2P%, 3P%, LF%, FT%), REB/T et EVAL/PIR : recalculés.
 
 Règles :
 - une entrée par joueur, dans l'ordre du tableau ;
