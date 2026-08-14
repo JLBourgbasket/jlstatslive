@@ -528,7 +528,7 @@
         <div style="display:grid;grid-template-columns:2fr auto auto auto;gap:12px;align-items:end;flex-wrap:wrap">
           <label style="display:flex;flex-direction:column;gap:6px">
             <span style="font:600 10px/1 Barlow,sans-serif;letter-spacing:.16em;color:rgba(255,255,255,.55)">URL</span>
-            <input type="url" value="{{ generic.url }}" onChange="{{ generic.onUrl }}" placeholder="Lien FIBA LiveStats du match" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.2);color:#fff;padding:10px 12px;font:500 13px/1 Barlow,sans-serif;min-width:260px"/>
+            <input type="url" value="{{ generic.url }}" onChange="{{ generic.onUrl }}" placeholder="Lien FIBA LiveStats ou LNB match-center" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.2);color:#fff;padding:10px 12px;font:500 13px/1 Barlow,sans-serif;min-width:260px"/>
           </label>
           <label style="display:flex;flex-direction:column;gap:6px">
             <span style="font:600 10px/1 Barlow,sans-serif;letter-spacing:.16em;color:rgba(255,255,255,.55)">{{ t.intervalLabel }}</span>
@@ -847,8 +847,8 @@ const LNB_MAP={'#':'num','nom':'name','joueur':'name','player':'name','min':'min
   '+/-':'pm','+/‑':'pm','pm':'pm','eval':'ev'};
 
 const T={
-  fr:{genericSourceSub:'match FIBA sans effectif',genericFlip:'INVERSER',genericNote:'Collez le lien d’un match FIBA LiveStats (fiba.basketball). Indicateurs collectifs uniquement, contre des cibles génériques — pas de comparaison joueur ni de référence historique.',momentumSub:'Écart de points par tranche de 5 minutes',alertsTitle:'À corriger maintenant',maxFive:'5 priorités max',alertsNone:'Aucun écart critique — le plan tient',alertsNoneDetail:'Toutes les métriques clés sont dans leur zone cible.',pulseTitle:'Pouls collectif',legendTitle:'LECTURE',legend:{good:'dans la cible',warn:'écart à surveiller',bad:'écart critique',neutral:'échantillon insuffisant'},brandNote:'Le rouge JL Bourg ne sert qu’à l’identité (bandeau, logo, carrés). Une alerte porte toujours un pictogramme en plus de la couleur.',duelsTitle:'Duel JL Bourg / adversaire',teamGaugesTitle:'Jauges collectives vs baseline V0',playersTitle:'Joueurs vs baseline individuelle',baseline:'RÉFÉRENCE HISTORIQUE',liveIntro:'Collez l’URL publique du live boxscore ou d’un endpoint JSON. L’app tente un accès direct, puis la fonction Netlify /.netlify/functions/live-stats si le fournisseur bloque le navigateur (CORS).',refresh:'RAFRAÎCHIR',connect:'CONNECTER',refreshNow:'ACTUALISER',disconnect:'DÉCONNECTER',boxscoreTitle:'Boxscore équipe',minutesPlayed:'MINUTES JOUÉES',opponent:'ADVERSAIRE',resetDemo:'RECHARGER LA DÉMO',resetLive:'REMETTRE LE MATCH À ZÉRO',pasteImageHint:'Cliquez ici puis Ctrl+V (Cmd+V sur Mac) pour coller une capture d\u2019écran copiée dans le presse-papiers',rosterEntry:'Boxscore joueurs',importJson:'IMPORTER',exportJson:'EXPORTER',shotTitle:'Capture',shotNote:'',shotNote2:'Photographiez le tableau officiel à chaque quart-temps. Une seule photo combinée fonctionne, mais une photo par équipe (ci-dessous) donne une lecture plus fiable — chaque image ne contient alors qu’un seul tableau à aligner. « LIRE LA PHOTO » envoie l’image à la fonction vision, qui renvoie les lignes joueurs : relisez-les, puis injectez. Rien n’est calculé avant votre validation.',shotSlotA:'PHOTO ÉQUIPE 1 (JL BOURG) — OU PHOTO COMBINÉE',shotSlotB:'PHOTO ÉQUIPE 2 (ADVERSAIRE) — FACULTATIF',clearShot:'RETIRER',sortStatus:'PRIORITÉ',sortMin:'MINUTES',sortName:'NOM',status:{ok:'OK',watch:'À SURVEILLER',alert:'ALERTE',low:'ÉCHANTILLON FAIBLE'},min:'min',fouls:'FAUTES',teamFouls:'FAUTES ÉQUIPE',noBaseline:'SANS BASELINE HISTORIQUE',noBaselineShort:'PAS DE BASELINE',pasteTitle:'Import boxscore LNB',pasteNote:'Copiez le tableau du boxscore LNB (sélection de la page ou HTML) et collez-le ici. Colonnes reconnues : MIN, PTS, 2TR/2TT, 3R/3T, LFR/LFT, RO, RD, PD, INT, CT, BP, FTE, +/-, EVAL. Les joueurs absents de la baseline sont affichés en gris.',analyze:'ANALYSER LE TABLEAU',sideAuto:'AUTO',sideJl:'JL BOURG',sideOpp:'ADVERSAIRE',pasteOk:' joueurs importés',pasteBad:'Tableau non reconnu. Vérifiez que la ligne d’en-têtes (NOM, MIN, PTS…) est incluse.',ignored:'hors effectif 2026-27, ignorés :',visionRead:'LIRE LA PHOTO',visionBusy:'Lecture de la photo en cours…',visionErr:'Lecture impossible : ',visionOk:'Relisez les lignes puis injectez',visionNoShot:'Chargez d’abord une photo.',visionNotDeployed:'la fonction vision-boxscore n’est pas publiée sur ce site — redéployez avec les fonctions et vérifiez ANTHROPIC_API_KEY',visionErrNoPlayer:'aucun joueur détecté sur l’image',visionTimeout:'la lecture a dépassé le délai autorisé par Netlify — photographiez une équipe à la fois, ou utilisez l’import par copier-coller',inject:'INJECTER',cancelBtn:'ANNULER',visionUnknown:'hors effectif',plusMinus:'+/-',evalLbl:'EVAL',quarter:'QUART-TEMPS',target:'cible',live:'live',off:'HORS LIGNE',on:'EN DIRECT',simu:'SIMULATION',never:'aucune donnée',updated:'maj',simOn:'ARRÊTER LA SIMU',simOff:'SIMULER UN MATCH',connecting:'Connexion…',connected:'Flux connecté.',failed:'Flux illisible : ',jsonOk:'Match importé.',jsonBad:'JSON invalide.',csvOk:' lignes joueurs importées.',csvBad:'CSV illisible.'},
-  en:{genericSourceSub:'FIBA game, no roster',genericFlip:'FLIP',genericNote:'Paste a FIBA LiveStats match link (fiba.basketball). Team-level indicators only, against generic targets — no player comparison or historical baseline.',momentumSub:'Point differential per 5-minute block',alertsTitle:'Fix now',maxFive:'5 priorities max',alertsNone:'No critical gap — the plan holds',alertsNoneDetail:'All key metrics sit inside their target zone.',pulseTitle:'Team pulse',legendTitle:'READING',legend:{good:'on target',warn:'gap to watch',bad:'critical gap',neutral:'sample too small'},brandNote:'JL Bourg red is identity only (header, logo, squares). Every alert carries a glyph on top of its colour.',duelsTitle:'JL Bourg vs opponent',teamGaugesTitle:'Team gauges vs baseline V0',playersTitle:'Players vs individual baseline',baseline:'HISTORICAL BASELINE',liveIntro:'Paste the public live boxscore URL or a JSON endpoint. The app tries a direct fetch, then the Netlify function /.netlify/functions/live-stats when the provider blocks the browser (CORS).',refresh:'REFRESH',connect:'CONNECT',refreshNow:'UPDATE NOW',disconnect:'DISCONNECT',boxscoreTitle:'Team boxscore',minutesPlayed:'MINUTES PLAYED',opponent:'OPPONENT',resetDemo:'RELOAD DEMO',resetLive:'RESET MATCH TO ZERO',pasteImageHint:'Click here then Ctrl+V (Cmd+V on Mac) to paste a screenshot from your clipboard',rosterEntry:'Player boxscore',importJson:'IMPORT',exportJson:'EXPORT',shotTitle:'Screenshot',shotNote:'',shotNote2:'Photograph the official table at each quarter. One combined photo works, but one photo per team (below) reads more reliably — each image then has only one table to align. “READ PHOTO” sends the image to the vision function, which returns the player rows: check them, then inject. Nothing is computed before your validation.',shotSlotA:'TEAM 1 PHOTO (JL BOURG) — OR COMBINED PHOTO',shotSlotB:'TEAM 2 PHOTO (OPPONENT) — OPTIONAL',clearShot:'REMOVE',sortStatus:'PRIORITY',sortMin:'MINUTES',sortName:'NAME',status:{ok:'OK',watch:'WATCH',alert:'ALERT',low:'LOW SAMPLE'},min:'min',fouls:'FOULS',teamFouls:'TEAM FOULS',noBaseline:'NO HISTORICAL BASELINE',noBaselineShort:'NO BASELINE',pasteTitle:'LNB boxscore import',pasteNote:'Copy the LNB boxscore table (page selection or HTML) and paste it here. Columns read: MIN, PTS, 2TR/2TT, 3R/3T, LFR/LFT, RO, RD, PD, INT, CT, BP, FTE, +/-, EVAL. Players without a baseline are shown in grey.',analyze:'PARSE TABLE',sideAuto:'AUTO',sideJl:'JL BOURG',sideOpp:'OPPONENT',pasteOk:' players imported',pasteBad:'Table not recognised. Make sure the header row (NOM, MIN, PTS…) is included.',ignored:'not in the 2026-27 roster, ignored:',visionRead:'READ PHOTO',visionBusy:'Reading the photo…',visionErr:'Cannot read: ',visionOk:'Check the rows, then inject',visionNoShot:'Load a photo first.',visionNotDeployed:'the vision-boxscore function is not published on this site — redeploy with functions and check ANTHROPIC_API_KEY',visionErrNoPlayer:'no player detected on the image',visionTimeout:'the read exceeded Netlify’s time limit — photograph one team at a time, or use the copy-paste import',inject:'INJECT',cancelBtn:'CANCEL',visionUnknown:'off roster',plusMinus:'+/-',evalLbl:'EVAL',quarter:'QUARTER',target:'target',live:'live',off:'OFFLINE',on:'LIVE',simu:'SIMULATED',never:'no data yet',updated:'upd',simOn:'STOP SIM',simOff:'SIMULATE GAME',connecting:'Connecting…',connected:'Feed connected.',failed:'Unreadable feed: ',jsonOk:'Match imported.',jsonBad:'Invalid JSON.',csvOk:' player rows imported.',csvBad:'Unreadable CSV.'}
+  fr:{genericSourceSub:'match FIBA ou LNB sans effectif',genericFlip:'INVERSER',genericNote:'Collez le lien d’un match FIBA LiveStats (fiba.basketball) ou d’un match-center LNB (lnb.fr). Indicateurs collectifs uniquement, contre des cibles génériques — pas de comparaison joueur ni de référence historique.',momentumSub:'Écart de points par tranche de 5 minutes',alertsTitle:'À corriger maintenant',maxFive:'5 priorités max',alertsNone:'Aucun écart critique — le plan tient',alertsNoneDetail:'Toutes les métriques clés sont dans leur zone cible.',pulseTitle:'Pouls collectif',legendTitle:'LECTURE',legend:{good:'dans la cible',warn:'écart à surveiller',bad:'écart critique',neutral:'échantillon insuffisant'},brandNote:'Le rouge JL Bourg ne sert qu’à l’identité (bandeau, logo, carrés). Une alerte porte toujours un pictogramme en plus de la couleur.',duelsTitle:'Duel JL Bourg / adversaire',teamGaugesTitle:'Jauges collectives vs baseline V0',playersTitle:'Joueurs vs baseline individuelle',baseline:'RÉFÉRENCE HISTORIQUE',liveIntro:'Collez l’URL publique du live boxscore ou d’un endpoint JSON. L’app tente un accès direct, puis la fonction Netlify /.netlify/functions/live-stats si le fournisseur bloque le navigateur (CORS).',refresh:'RAFRAÎCHIR',connect:'CONNECTER',refreshNow:'ACTUALISER',disconnect:'DÉCONNECTER',boxscoreTitle:'Boxscore équipe',minutesPlayed:'MINUTES JOUÉES',opponent:'ADVERSAIRE',resetDemo:'RECHARGER LA DÉMO',resetLive:'REMETTRE LE MATCH À ZÉRO',pasteImageHint:'Cliquez ici puis Ctrl+V (Cmd+V sur Mac) pour coller une capture d\u2019écran copiée dans le presse-papiers',rosterEntry:'Boxscore joueurs',importJson:'IMPORTER',exportJson:'EXPORTER',shotTitle:'Capture',shotNote:'',shotNote2:'Photographiez le tableau officiel à chaque quart-temps. Une seule photo combinée fonctionne, mais une photo par équipe (ci-dessous) donne une lecture plus fiable — chaque image ne contient alors qu’un seul tableau à aligner. « LIRE LA PHOTO » envoie l’image à la fonction vision, qui renvoie les lignes joueurs : relisez-les, puis injectez. Rien n’est calculé avant votre validation.',shotSlotA:'PHOTO ÉQUIPE 1 (JL BOURG) — OU PHOTO COMBINÉE',shotSlotB:'PHOTO ÉQUIPE 2 (ADVERSAIRE) — FACULTATIF',clearShot:'RETIRER',sortStatus:'PRIORITÉ',sortMin:'MINUTES',sortName:'NOM',status:{ok:'OK',watch:'À SURVEILLER',alert:'ALERTE',low:'ÉCHANTILLON FAIBLE'},min:'min',fouls:'FAUTES',teamFouls:'FAUTES ÉQUIPE',noBaseline:'SANS BASELINE HISTORIQUE',noBaselineShort:'PAS DE BASELINE',pasteTitle:'Import boxscore LNB',pasteNote:'Copiez le tableau du boxscore LNB (sélection de la page ou HTML) et collez-le ici. Colonnes reconnues : MIN, PTS, 2TR/2TT, 3R/3T, LFR/LFT, RO, RD, PD, INT, CT, BP, FTE, +/-, EVAL. Les joueurs absents de la baseline sont affichés en gris.',analyze:'ANALYSER LE TABLEAU',sideAuto:'AUTO',sideJl:'JL BOURG',sideOpp:'ADVERSAIRE',pasteOk:' joueurs importés',pasteBad:'Tableau non reconnu. Vérifiez que la ligne d’en-têtes (NOM, MIN, PTS…) est incluse.',ignored:'hors effectif 2026-27, ignorés :',visionRead:'LIRE LA PHOTO',visionBusy:'Lecture de la photo en cours…',visionErr:'Lecture impossible : ',visionOk:'Relisez les lignes puis injectez',visionNoShot:'Chargez d’abord une photo.',visionNotDeployed:'la fonction vision-boxscore n’est pas publiée sur ce site — redéployez avec les fonctions et vérifiez ANTHROPIC_API_KEY',visionErrNoPlayer:'aucun joueur détecté sur l’image',visionTimeout:'la lecture a dépassé le délai autorisé par Netlify — photographiez une équipe à la fois, ou utilisez l’import par copier-coller',inject:'INJECTER',cancelBtn:'ANNULER',visionUnknown:'hors effectif',plusMinus:'+/-',evalLbl:'EVAL',quarter:'QUART-TEMPS',target:'cible',live:'live',off:'HORS LIGNE',on:'EN DIRECT',simu:'SIMULATION',never:'aucune donnée',updated:'maj',simOn:'ARRÊTER LA SIMU',simOff:'SIMULER UN MATCH',connecting:'Connexion…',connected:'Flux connecté.',failed:'Flux illisible : ',jsonOk:'Match importé.',jsonBad:'JSON invalide.',csvOk:' lignes joueurs importées.',csvBad:'CSV illisible.'},
+  en:{genericSourceSub:'FIBA or LNB game, no roster',genericFlip:'FLIP',genericNote:'Paste a FIBA LiveStats match link (fiba.basketball) or an LNB match-center link (lnb.fr). Team-level indicators only, against generic targets — no player comparison or historical baseline.',momentumSub:'Point differential per 5-minute block',alertsTitle:'Fix now',maxFive:'5 priorities max',alertsNone:'No critical gap — the plan holds',alertsNoneDetail:'All key metrics sit inside their target zone.',pulseTitle:'Team pulse',legendTitle:'READING',legend:{good:'on target',warn:'gap to watch',bad:'critical gap',neutral:'sample too small'},brandNote:'JL Bourg red is identity only (header, logo, squares). Every alert carries a glyph on top of its colour.',duelsTitle:'JL Bourg vs opponent',teamGaugesTitle:'Team gauges vs baseline V0',playersTitle:'Players vs individual baseline',baseline:'HISTORICAL BASELINE',liveIntro:'Paste the public live boxscore URL or a JSON endpoint. The app tries a direct fetch, then the Netlify function /.netlify/functions/live-stats when the provider blocks the browser (CORS).',refresh:'REFRESH',connect:'CONNECT',refreshNow:'UPDATE NOW',disconnect:'DISCONNECT',boxscoreTitle:'Team boxscore',minutesPlayed:'MINUTES PLAYED',opponent:'OPPONENT',resetDemo:'RELOAD DEMO',resetLive:'RESET MATCH TO ZERO',pasteImageHint:'Click here then Ctrl+V (Cmd+V on Mac) to paste a screenshot from your clipboard',rosterEntry:'Player boxscore',importJson:'IMPORT',exportJson:'EXPORT',shotTitle:'Screenshot',shotNote:'',shotNote2:'Photograph the official table at each quarter. One combined photo works, but one photo per team (below) reads more reliably — each image then has only one table to align. “READ PHOTO” sends the image to the vision function, which returns the player rows: check them, then inject. Nothing is computed before your validation.',shotSlotA:'TEAM 1 PHOTO (JL BOURG) — OR COMBINED PHOTO',shotSlotB:'TEAM 2 PHOTO (OPPONENT) — OPTIONAL',clearShot:'REMOVE',sortStatus:'PRIORITY',sortMin:'MINUTES',sortName:'NAME',status:{ok:'OK',watch:'WATCH',alert:'ALERT',low:'LOW SAMPLE'},min:'min',fouls:'FOULS',teamFouls:'TEAM FOULS',noBaseline:'NO HISTORICAL BASELINE',noBaselineShort:'NO BASELINE',pasteTitle:'LNB boxscore import',pasteNote:'Copy the LNB boxscore table (page selection or HTML) and paste it here. Columns read: MIN, PTS, 2TR/2TT, 3R/3T, LFR/LFT, RO, RD, PD, INT, CT, BP, FTE, +/-, EVAL. Players without a baseline are shown in grey.',analyze:'PARSE TABLE',sideAuto:'AUTO',sideJl:'JL BOURG',sideOpp:'OPPONENT',pasteOk:' players imported',pasteBad:'Table not recognised. Make sure the header row (NOM, MIN, PTS…) is included.',ignored:'not in the 2026-27 roster, ignored:',visionRead:'READ PHOTO',visionBusy:'Reading the photo…',visionErr:'Cannot read: ',visionOk:'Check the rows, then inject',visionNoShot:'Load a photo first.',visionNotDeployed:'the vision-boxscore function is not published on this site — redeploy with functions and check ANTHROPIC_API_KEY',visionErrNoPlayer:'no player detected on the image',visionTimeout:'the read exceeded Netlify’s time limit — photograph one team at a time, or use the copy-paste import',inject:'INJECT',cancelBtn:'CANCEL',visionUnknown:'off roster',plusMinus:'+/-',evalLbl:'EVAL',quarter:'QUARTER',target:'target',live:'live',off:'OFFLINE',on:'LIVE',simu:'SIMULATED',never:'no data yet',updated:'upd',simOn:'STOP SIM',simOff:'SIMULATE GAME',connecting:'Connecting…',connected:'Feed connected.',failed:'Unreadable feed: ',jsonOk:'Match imported.',jsonBad:'Invalid JSON.',csvOk:' player rows imported.',csvBad:'Unreadable CSV.'}
 };
 
 function demoData(){
@@ -1062,11 +1062,66 @@ class Component extends DCLogic {
     const away=home===g.teamA?g.teamB:g.teamA;
     return {meta:{teamName:home.Name,oppName:away.Name,elapsed:this.fibaClockElapsed(g)},team:this.fibaTeamStats(home),opp:this.fibaTeamStats(away),players:mkPlayers(home)};
   }
-  genericGameId(url){ return this.fibaGameId(url); }
-  genericParse(json){
+  fibaParseGeneric(json){
     const g=json&&json.game&&json.game.content; if(!g||!g.teamA||!g.teamB) return null;
     return {teamA:{name:g.teamA.Name,stats:this.fibaTeamStats(g.teamA)},teamB:{name:g.teamB.Name,stats:this.fibaTeamStats(g.teamB)},
       period:g.CurrentPeriod||'Q1',clock:g.RC||'00:00',elapsed:this.fibaClockElapsed(g)};
+  }
+  lnbGameId(url){
+    const m=String(url||'').match(/lnb\.fr\/[a-z]{2}\/match-center\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i);
+    return m?m[1]:null;
+  }
+  lnbEntityStats(e){
+    const s=v=>num(v);
+    return {pts:0,fgm:s(e.pointsTwoMade)+s(e.pointsThreeMade),fga:s(e.pointsTwoAttempted)+s(e.pointsThreeAttempted),
+      '3pm':s(e.pointsThreeMade),'3pa':s(e.pointsThreeAttempted),ftm:s(e.freeThrowsMade),fta:s(e.freeThrowsAttempted),
+      orb:s(e.reboundsOffensive),drb:s(e.reboundsDefensive),ast:s(e.assists),to:s(e.turnovers),stl:s(e.steals),blk:s(e.blocks),pf:s(e.foulsTotal)};
+  }
+  lnbMinutes(iso){
+    const m=String(iso||'').match(/PT(?:(\d+)M)?(?:(\d+)S)?/); if(!m) return 0;
+    return num(m[1])+num(m[2])/60;
+  }
+  lnbPlayersFrom(personsBlock){
+    const out={};
+    const rows=(personsBlock&&personsBlock[0]&&personsBlock[0].rows)||[];
+    rows.forEach(r=>{
+      const s=r.statistics||{};
+      out[r.personName]={min:this.lnbMinutes(s.minutes),pts:num(s.points),fgm:num(s.pointsTwoMade)+num(s.pointsThreeMade),fga:num(s.pointsTwoAttempted)+num(s.pointsThreeAttempted),
+        '3pm':num(s.pointsThreeMade),'3pa':num(s.pointsThreeAttempted),ftm:num(s.freeThrowsMade),fta:num(s.freeThrowsAttempted),
+        orb:num(s.reboundsOffensive),drb:num(s.reboundsDefensive),ast:num(s.assists),to:num(s.turnovers),stl:num(s.steals),blk:num(s.blocks),pf:num(s.foulsTotal),pm:num(s.plusMinus),ev:num(s.efficiency)};
+    });
+    return out;
+  }
+  lnbElapsed(fx){
+    const per=num(fx&&fx.profile&&fx.profile.periodLength)||10;
+    const n=num(fx&&fx.profile&&fx.profile.numberOfPeriods)||4;
+    const ended=/termin|final|ended/i.test((fx&&fx.statusLabel)||'');
+    return ended?per*n:per*n*0.5;
+  }
+  lnbCompetitors(fx){
+    const list=fx.competitors||[];
+    const home=list.find(c=>c.isHome)||list[0], away=list.find(c=>!c.isHome)||list[1];
+    return {home,away};
+  }
+  lnbParseGeneric(json){
+    const d=json&&json.data; const fx=d&&d.fixture; const base=d&&d.statistics&&d.statistics.data&&d.statistics.data.base;
+    if(!fx||!base||!base.home||!base.away) return null;
+    const {home,away}=this.lnbCompetitors(fx);
+    return {teamA:{name:home.name,stats:Object.assign(this.lnbEntityStats(base.home.entity),{pts:num(home.score)})},
+      teamB:{name:away.name,stats:Object.assign(this.lnbEntityStats(base.away.entity),{pts:num(away.score)})},
+      period:fx.statusLabel||'',clock:'',elapsed:this.lnbElapsed(fx)};
+  }
+  lnbApiParse(json){
+    const d=json&&json.data; const fx=d&&d.fixture; const base=d&&d.statistics&&d.statistics.data&&d.statistics.data.base;
+    if(!fx||!base||!base.home||!base.away) return null;
+    const {home,away}=this.lnbCompetitors(fx);
+    const homePlayers=this.lnbPlayersFrom(base.home.persons), awayPlayers=this.lnbPlayersFrom(base.away.persons);
+    const homeIsRoster=Object.keys(homePlayers).some(n=>this.matchRoster(n));
+    const teamComp=homeIsRoster?home:away, oppComp=homeIsRoster?away:home;
+    const teamPlayers=homeIsRoster?homePlayers:awayPlayers;
+    const teamStats=Object.assign(this.lnbEntityStats(homeIsRoster?base.home.entity:base.away.entity),{pts:num(teamComp.score)});
+    const oppStats=Object.assign(this.lnbEntityStats(homeIsRoster?base.away.entity:base.home.entity),{pts:num(oppComp.score)});
+    return {meta:{teamName:teamComp.name,oppName:oppComp.name,elapsed:this.lnbElapsed(fx)},team:teamStats,opp:oppStats,players:teamPlayers};
   }
   genericMetrics(){
     const g=this.state.genericData; if(!g) return null;
@@ -1094,9 +1149,10 @@ class Component extends DCLogic {
     this._genericAbort=myAbort;
     const mine=()=>this._genericAbort===myAbort;
     this.setState({genericLastAttempt:Date.now()});
-    const fibaId=this.genericGameId(raw);
-    if(!fibaId){ if(mine()) this.setState({genericStatus:'error',genericMsg:this.tr().failed+raw}); return; }
-    const target='https://www.fiba.basketball/en/events/api/game-live-info/'+fibaId+'/detail';
+    const fibaId=this.fibaGameId(raw);
+    const lnbId=!fibaId?this.lnbGameId(raw):null;
+    if(!fibaId&&!lnbId){ if(mine()) this.setState({genericStatus:'error',genericMsg:this.tr().failed+raw}); return; }
+    const target=fibaId?('https://www.fiba.basketball/en/events/api/game-live-info/'+fibaId+'/detail'):('https://embed-api.eui.connect.sportradar.com/v1/embed/12/fixture_detail?fixtureId='+lnbId);
     const tryUrls=['/.netlify/functions/live-stats?url='+encodeURIComponent(target)];
     for(let i=0;i<tryUrls.length;i++){
       const u=tryUrls[i], viaProxy=true;
@@ -1113,7 +1169,7 @@ class Component extends DCLogic {
           body=env.body||'';
         }
         let inner=null; try{ inner=JSON.parse(body); }catch(e){ inner=null; }
-        const gd=inner?this.genericParse(inner):null;
+        const gd=inner?(fibaId?this.fibaParseGeneric(inner):this.lnbParseGeneric(inner)):null;
         if(gd){
           if(mine()){
             const prev=this.state.genericData;
@@ -1172,10 +1228,12 @@ class Component extends DCLogic {
     this._liveAbort=myAbort;
     const mine=()=>this._liveAbort===myAbort;
     const fibaId=this.fibaGameId(raw);
-    const target=fibaId?('https://www.fiba.basketball/en/events/api/game-live-info/'+fibaId+'/detail'):raw;
-    const tryUrls=fibaId?['/.netlify/functions/live-stats?url='+encodeURIComponent(target)]:[target,'/.netlify/functions/live-stats?url='+encodeURIComponent(target)];
+    const lnbId=!fibaId?this.lnbGameId(raw):null;
+    const knownSource=fibaId||lnbId;
+    const target=fibaId?('https://www.fiba.basketball/en/events/api/game-live-info/'+fibaId+'/detail'):(lnbId?('https://embed-api.eui.connect.sportradar.com/v1/embed/12/fixture_detail?fixtureId='+lnbId):raw);
+    const tryUrls=knownSource?['/.netlify/functions/live-stats?url='+encodeURIComponent(target)]:[target,'/.netlify/functions/live-stats?url='+encodeURIComponent(target)];
     for(let i=0;i<tryUrls.length;i++){
-      const u=tryUrls[i], viaProxy=fibaId?true:i>0;
+      const u=tryUrls[i], viaProxy=knownSource?true:i>0;
       const timer=setTimeout(()=>{ try{myAbort.abort();}catch(e){} },8000);
       try{
         const r=await fetch(u,{cache:'no-store',signal:myAbort.signal});
@@ -1191,6 +1249,7 @@ class Component extends DCLogic {
         let inner=null; try{ inner=JSON.parse(body); }catch(e){ inner=null; }
         let d=null;
         if(fibaId && inner) d=this.fibaParse(inner);
+        else if(lnbId && inner) d=this.lnbApiParse(inner);
         else if(inner) d=this.normalize(inner);
         if(!d){
           const blocks=this.lnbTables(body).map(b=>this.lnbParse(b)).filter(Boolean);
@@ -1205,7 +1264,7 @@ class Component extends DCLogic {
         if(d){
           if(mine()){
             const prev=this.state.data;
-            const stale=fibaId&&prev&&prev.meta&&prev.meta.teamName===d.meta.teamName&&prev.meta.oppName===d.meta.oppName&&(d.team.pts+d.opp.pts)<(prev.team.pts+prev.opp.pts);
+            const stale=knownSource&&prev&&prev.meta&&prev.meta.teamName===d.meta.teamName&&prev.meta.oppName===d.meta.oppName&&(d.team.pts+d.opp.pts)<(prev.team.pts+prev.opp.pts);
             if(!stale){ this.setState({liveStatus:'live',liveMsg:this.tr().connected,lastUpdate:Date.now(),data:d}); this.persist(d); }
             else this.setState({liveMsg:this.tr().connected});
           }
