@@ -1079,16 +1079,24 @@ class Component extends DCLogic {
   toggleGenericFlip=()=>this.setState(s=>({genericFlip:!s.genericFlip}));
   onGenericUrl=e=>this.setState({genericUrl:e.target.value});
   onGenericInterval=e=>this.setState({genericInterval:num(e.target.value)});
+  fetchTimeout(url,opts,ms){
+    const controller=new AbortController();
+    const timer=setTimeout(()=>controller.abort(),ms||8000);
+    return fetch(url,Object.assign({},opts,{signal:controller.signal})).finally(()=>clearTimeout(timer));
+  }
   async fetchGenericLive(){
     const raw=this.state.genericUrl; if(!raw)return;
+    if(this._genericBusy) return;
+    this._genericBusy=true;
+    try{
     const fibaId=this.genericGameId(raw);
     if(!fibaId){ this.setState({genericStatus:'error',genericMsg:this.tr().failed+raw}); return; }
     const target='https://www.fiba.basketball/en/events/api/game-live-info/'+fibaId+'/detail';
-    const tryUrls=[target,'/.netlify/functions/live-stats?url='+encodeURIComponent(target)];
+    const tryUrls=['/.netlify/functions/live-stats?url='+encodeURIComponent(target)];
     for(let i=0;i<tryUrls.length;i++){
-      const u=tryUrls[i], viaProxy=i>0;
+      const u=tryUrls[i], viaProxy=true;
       try{
-        const r=await fetch(u,{cache:'no-store'});
+        const r=await this.fetchTimeout(u,{cache:'no-store'},8000);
         if(!r.ok) continue;
         const raw2=await r.text();
         let body=raw2;
@@ -1103,6 +1111,7 @@ class Component extends DCLogic {
       }catch(e){}
     }
     this.setState({genericStatus:'error',genericMsg:this.tr().failed+raw});
+    }finally{ this._genericBusy=false; }
   }
   heroesFor(m,t,lang){
     const dial=(pct,color)=>'conic-gradient(from 205deg,'+color+' 0 '+(pct*0.75).toFixed(1)+'%,#e6e1d8 '+(pct*0.75).toFixed(1)+'% 75%,#f5f2ec 75% 100%)';
@@ -1142,13 +1151,16 @@ class Component extends DCLogic {
   }
   async fetchLive(){
     const raw=this.state.liveUrl; if(!raw)return;
+    if(this._liveBusy) return;
+    this._liveBusy=true;
+    try{
     const fibaId=this.fibaGameId(raw);
     const target=fibaId?('https://www.fiba.basketball/en/events/api/game-live-info/'+fibaId+'/detail'):raw;
-    const tryUrls=[target,'/.netlify/functions/live-stats?url='+encodeURIComponent(target)];
+    const tryUrls=fibaId?['/.netlify/functions/live-stats?url='+encodeURIComponent(target)]:[target,'/.netlify/functions/live-stats?url='+encodeURIComponent(target)];
     for(let i=0;i<tryUrls.length;i++){
-      const u=tryUrls[i], viaProxy=i>0;
+      const u=tryUrls[i], viaProxy=fibaId?true:i>0;
       try{
-        const r=await fetch(u,{cache:'no-store'});
+        const r=await this.fetchTimeout(u,{cache:'no-store'},8000);
         if(!r.ok) continue;
         const raw2=await r.text();
         let body=raw2;
@@ -1175,6 +1187,7 @@ class Component extends DCLogic {
       }catch(e){}
     }
     this.setState({liveStatus:'error',liveMsg:this.tr().failed+raw});
+    }finally{ this._liveBusy=false; }
   }
   normalize(o){
     if(!o||typeof o!=='object')return null;
