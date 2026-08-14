@@ -892,6 +892,13 @@ class Component extends DCLogic {
       if(s&&s.data&&s.data.team) this.setState({data:s.data,lang:s.lang||'fr',liveUrl:s.liveUrl||'',interval:s.interval||15});
     }catch(e){}
     this.loadProfiles();
+    this._visHandler=()=>{
+      if(document.visibilityState==='visible'){
+        if(this.state.liveStatus==='live') this.fetchLive();
+        if(this.state.genericStatus==='live') this.fetchGenericLive();
+      }
+    };
+    document.addEventListener('visibilitychange',this._visHandler);
   }
   async loadProfiles(){
     try{
@@ -953,7 +960,7 @@ class Component extends DCLogic {
       this.setState({saving:false,saveMsg:this.state.lang==='fr'?'Match enregistré':'Match saved',profiles:res.profiles||this.state.profiles});
     }catch(e){ this.setState({saving:false,saveMsg:'Erreur : '+e.message}); }
   }
-  componentWillUnmount(){ this.stopSim(); this.stopLive(); this.stopGeneric(); }
+  componentWillUnmount(){ this.stopSim(); this.stopLive(); this.stopGeneric(); if(this._visHandler) document.removeEventListener('visibilitychange',this._visHandler); }
   persist(data){
     const d=data||this.state.data;
     try{localStorage.setItem(KEY,JSON.stringify({data:d,lang:this.state.lang,liveUrl:this.state.liveUrl,interval:this.state.interval}));}catch(e){}
