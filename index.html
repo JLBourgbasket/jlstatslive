@@ -541,6 +541,7 @@
           <span style="width:8px;height:8px;border-radius:50%;background:{{ generic.status.dotColor }};animation:{{ generic.status.anim }}"></span>
           <span style="font:700 11px/1 Barlow,sans-serif;letter-spacing:.14em">{{ generic.status.label }}</span>
           <span style="font:500 11px/1 Barlow,sans-serif;color:{{ generic.status.msgColor }}">{{ generic.status.msg }}</span>
+          <span style="font:500 10px/1 Barlow,sans-serif;color:rgba(255,255,255,.4)">· dernière tentative {{ generic.status.attemptStamp }} · {{ generic.status.stamp }}</span>
           <button onClick="{{ generic.refresh }}" style="margin-left:auto;padding:8px 14px;background:transparent;color:#fff;border:1px solid rgba(255,255,255,.3);font:700 10px/1 Barlow,sans-serif;letter-spacing:.1em;cursor:pointer">{{ t.refresh }}</button>
           <button onClick="{{ generic.flip }}" style="padding:8px 14px;background:transparent;color:#fff;border:1px solid rgba(255,255,255,.3);font:700 10px/1 Barlow,sans-serif;letter-spacing:.1em;cursor:pointer">{{ t.genericFlip }}</button>
         </div>
@@ -881,7 +882,7 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 class Component extends DCLogic {
   state={lang:'fr',view:'live',sim:false,sort:'status',open:null,data:demoData(),
     liveUrl:'',interval:15,liveStatus:'offline',liveMsg:'',lastUpdate:null,
-    genericUrl:'',genericInterval:15,genericStatus:'offline',genericMsg:'',genericLastUpdate:null,genericData:null,genericFlip:false,
+    genericUrl:'',genericInterval:15,genericStatus:'offline',genericMsg:'',genericLastUpdate:null,genericLastAttempt:null,genericData:null,genericFlip:false,
     jsonText:'',jsonMsg:'',csvMsg:'',shot:null,pasteText:'',pasteSide:'auto',pasteMsg:'',
     visionMsg:'',visionPreview:null,shotOpp:null,
     profiles:{},matchList:[],matchListMsg:'',saveMsg:'',saving:false};
@@ -1032,7 +1033,7 @@ class Component extends DCLogic {
     this._live=setInterval(()=>this.fetchLive(),Math.max(5,num(this.state.interval))*1000);
   };
   disconnectLive=()=>{ this.stopLive(); this.setState({liveStatus:'offline',liveMsg:''}); };
-  refreshLive=()=>this.fetchLive();
+  refreshLive=()=>this.connectLive();
   fibaGameId(url){
     const m=String(url||'').match(/fiba\.basketball\/[a-z]{2}\/(?:events\/[^/]+\/games|games)\/(\d+)/i);
     return m?m[1]:null;
@@ -1082,7 +1083,7 @@ class Component extends DCLogic {
     this._generic=setInterval(()=>this.fetchGenericLive(),Math.max(5,num(this.state.genericInterval))*1000);
   };
   disconnectGeneric=()=>{ this.stopGeneric(); this.setState({genericStatus:'offline',genericMsg:''}); };
-  refreshGeneric=()=>this.fetchGenericLive();
+  refreshGeneric=()=>this.connectGeneric();
   toggleGenericFlip=()=>this.setState(s=>({genericFlip:!s.genericFlip}));
   onGenericUrl=e=>this.setState({genericUrl:e.target.value});
   onGenericInterval=e=>this.setState({genericInterval:num(e.target.value)});
@@ -1092,6 +1093,7 @@ class Component extends DCLogic {
     const myAbort=new AbortController();
     this._genericAbort=myAbort;
     const mine=()=>this._genericAbort===myAbort;
+    this.setState({genericLastAttempt:Date.now()});
     const fibaId=this.genericGameId(raw);
     if(!fibaId){ if(mine()) this.setState({genericStatus:'error',genericMsg:this.tr().failed+raw}); return; }
     const target='https://www.fiba.basketball/en/events/api/game-live-info/'+fibaId+'/detail';
@@ -1112,7 +1114,16 @@ class Component extends DCLogic {
         }
         let inner=null; try{ inner=JSON.parse(body); }catch(e){ inner=null; }
         const gd=inner?this.genericParse(inner):null;
-        if(gd){ if(mine()) this.setState({genericStatus:'live',genericMsg:this.tr().connected,genericLastUpdate:Date.now(),genericData:gd}); return; }
+        if(gd){
+          if(mine()){
+            const prev=this.state.genericData;
+            const samegame=prev&&prev.teamA.name===gd.teamA.name&&prev.teamB.name===gd.teamB.name;
+            const stale=samegame&&(gd.teamA.stats.pts+gd.teamB.stats.pts)<(prev.teamA.stats.pts+prev.teamB.stats.pts);
+            if(!stale) this.setState({genericStatus:'live',genericMsg:this.tr().connected,genericLastUpdate:Date.now(),genericData:gd});
+            else this.setState({genericMsg:this.tr().connected});
+          }
+          return;
+        }
       }catch(e){ clearTimeout(timer); }
     }
     if(mine()) this.setState({genericStatus:'error',genericMsg:this.tr().failed+raw});
@@ -1142,12 +1153,13 @@ class Component extends DCLogic {
     const liveMap={offline:{label:t.off,dot:'#8a8578',anim:'none'},connecting:{label:t.connecting.toUpperCase(),dot:'#d4820a',anim:'blip 1s infinite'},live:{label:t.on,dot:'#31c46a',anim:'blip 1.4s infinite'},error:{label:t.error,dot:'#c8101e',anim:'none'}};
     const ls=liveMap[this.state.genericStatus]||liveMap.offline;
     const stamp=this.state.genericLastUpdate?t.updated+' '+new Date(this.state.genericLastUpdate).toLocaleTimeString(lang==='fr'?'fr-FR':'en-GB'):t.never;
+    const attemptStamp=this.state.genericLastAttempt?new Date(this.state.genericLastAttempt).toLocaleTimeString(lang==='fr'?'fr-FR':'en-GB'):'—';
     const a=g?(flip?g.teamB:g.teamA):null, b=g?(flip?g.teamA:g.teamB):null;
     return {
       url:this.state.genericUrl,interval:String(this.state.genericInterval),
       onUrl:this.onGenericUrl,onInterval:this.onGenericInterval,
       connect:this.connectGeneric,refresh:this.refreshGeneric,disconnect:this.disconnectGeneric,flip:this.toggleGenericFlip,
-      status:{label:ls.label,dotColor:ls.dot,anim:ls.anim,stamp,msg:this.state.genericMsg,msgColor:this.state.genericStatus==='error'?'#ff8a93':'rgba(255,255,255,.7)'},
+      status:{label:ls.label,dotColor:ls.dot,anim:ls.anim,stamp,attemptStamp,msg:this.state.genericMsg,msgColor:this.state.genericStatus==='error'?'#ff8a93':'rgba(255,255,255,.7)'},
       hasData:!!g,
       score:g?{teamName:a.name,oppName:b.name,teamScore:a.stats.pts,oppScore:b.stats.pts,periodLabel:g.period,clock:g.clock}:null,
       heroes,teamGauges
@@ -1190,7 +1202,15 @@ class Component extends DCLogic {
             d=this.rebuildHistory(d,null);
           }
         }
-        if(d){ if(mine()){ this.setState({liveStatus:'live',liveMsg:this.tr().connected,lastUpdate:Date.now(),data:d}); this.persist(d); } return; }
+        if(d){
+          if(mine()){
+            const prev=this.state.data;
+            const stale=fibaId&&prev&&prev.meta&&prev.meta.teamName===d.meta.teamName&&prev.meta.oppName===d.meta.oppName&&(d.team.pts+d.opp.pts)<(prev.team.pts+prev.opp.pts);
+            if(!stale){ this.setState({liveStatus:'live',liveMsg:this.tr().connected,lastUpdate:Date.now(),data:d}); this.persist(d); }
+            else this.setState({liveMsg:this.tr().connected});
+          }
+          return;
+        }
       }catch(e){ clearTimeout(timer); }
     }
     if(mine()) this.setState({liveStatus:'error',liveMsg:this.tr().failed+raw});
