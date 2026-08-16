@@ -832,8 +832,8 @@ const PLAYER_B={
   'Nathan Soliman':{role:'SF/PF · mismatch',season:'2025–26 · 49 GP',hist:{ts:56.8,efg:52.1,usg:22.4,ast:19.9,tov:12.0,orb:6.9,trb:13.2},targets:{ts:57,efg:53,usg:[19,25],ast:18,tov:13,trb:12}},
   'Adrian Nelson':{role:'PF · finisher / rebounder',season:'2024–25 · 56 GP',hist:{ts:54.0,efg:51.0,usg:18.5,ast:7.0,tov:7.6,orb:9.9,trb:13.9},targets:{ts:55,efg:52,usg:[15,21],tov:10,orb:9,trb:13}},
   'Tyrese Samuel':{role:'PF/C · switchable big',season:'2025–26 · 22 GP',hist:{ts:58.4,efg:54.9,usg:23.8,ast:13.8,tov:12.1,orb:11.8,trb:16.5},targets:{ts:59,efg:55,usg:[19,25],ast:11,tov:13,orb:10,trb:15}},
-  'Lionel Gaudoux':{role:'C/PF · hub big',season:'2025–26 · 38 GP',hist:{ts:60.5,efg:57.2,usg:20.3,ast:16.4,tov:17.7,orb:12.6,trb:15.6},targets:{ts:60,efg:57,usg:[17,23],ast:15,tov:18,orb:11,trb:14}},
-  'Kadin Shedrick':{role:'C · rim runner / protector',season:'2025–26 · 14 GP',hist:{ts:64.1,efg:62.9,usg:18.3,ast:7.8,tov:16.9,orb:11.9,trb:13.8},targets:{ts:62,efg:61,usg:[14,20],tov:17,orb:11,trb:13}}
+  'Lionel Gaudoux':{role:'C/PF · hub big',season:'2025–26 · 38 GP',hist:{ts:60.5,efg:57.2,usg:20.3,ast:16.4,tov:17.7,orb:12.6,trb:15.6},targets:{ts:60,efg:57,usg:[17,23],ast:15,tov:15,orb:11,trb:14}},
+  'Kadin Shedrick':{role:'C · rim runner / protector',season:'2025–26 · 14 GP',hist:{ts:64.1,efg:62.9,usg:18.3,ast:7.8,tov:16.9,orb:11.9,trb:13.8},targets:{ts:62,efg:61,usg:[14,20],tov:15,orb:11,trb:13}}
 };
 
 const P_DOM={ts:[35,75],efg:[30,75],usg:[5,35],ast:[0,40],tov:[0,30],orb:[0,20],trb:[0,25]};
@@ -1560,7 +1560,7 @@ class Component extends DCLogic {
     if(tar[k]===undefined)return 'neutral';
     const dif=k==='tov'?v-tar[k]:tar[k]-v;
     if(dif<=0)return 'good';
-    return dif<=(k==='ts'||k==='efg'?5:5)?'warn':'bad';
+    return dif<=(k==='tov'?3:5)?'warn':'bad';
   }
   refStatus(name,k,h){
     const tar=(PLAYER_B[name]||{targets:{}}).targets;
@@ -1569,7 +1569,7 @@ class Component extends DCLogic {
     if(tar[k]===undefined)return 'neutral';
     const dif=k==='tov'?h-tar[k]:tar[k]-h;
     if(dif<=0)return 'good';
-    return dif<=5?'warn':'bad';
+    return dif<=(k==='tov'?3:5)?'warn':'bad';
   }
   pTargetText(name,k){
     const t=PLAYER_B[name].targets[k],L=this.tr().target;
